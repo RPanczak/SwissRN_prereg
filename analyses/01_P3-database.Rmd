@@ -43,77 +43,109 @@ mu <- Hmisc::markupSpecs$html
 
 # Data
 
-Downloads from [SNF website](http://p3.snf.ch/Pages/DataAndDocumentation.aspx):
+Downloads of publicly available data from [SNF website](http://p3.snf.ch/Pages/DataAndDocumentation.aspx):
 
-- `P3_GrantExport`
-- `P3_GrantExport_with_abstracts`
-- `P3_PersonExport`
-- `P3_PublicationExport`
-- `P3_GrantOutputDataExport`
-- `P3_CollaborationExport`
+- `P3_GrantExport`  
+- `P3_GrantExport_with_abstracts`   
+- `P3_PersonExport`  
+- `P3_PublicationExport`   
+- `P3_GrantOutputDataExport`  
+- `P3_CollaborationExport`  
 
 ```{r}
+# P3_GrantExport
 download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantExport.csv',
               destfile = 'data-raw/P3/P3_GrantExport.csv',
               method = 'curl')
 
-zip(zipfile = "data-raw/P3/P3_GrantExport", 
-    files = "data-raw/P3/P3_GrantExport.csv")
+P3_GrantExport <- read_delim("data-raw/P3/P3_GrantExport.csv", 
+                             delim = ";", escape_double = FALSE, trim_ws = TRUE, 
+                             col_types = cols(`Project Title English` = col_character(), `Start Date` = col_date(format = "%d.%m.%Y"), `End Date` = col_date(format = "%d.%m.%Y"), Keywords = col_character()))
+
+write_fst(P3_GrantExport, "data-raw/P3/P3_GrantExport.fst")
 
 file.remove("data-raw/P3/P3_GrantExport.csv")
 
 
-
+# P3_GrantExport_with_abstracts
 download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantExport_with_abstracts.csv',
               destfile = 'data-raw/P3/P3_GrantExport_with_abstracts.csv',
               method = 'curl')
 
-zip(zipfile = "data-raw/P3/P3_GrantExport_with_abstracts", 
-    files = "data-raw/P3/P3_GrantExport_with_abstracts.csv")
+P3_GrantExport_with_abstracts <- read_delim("data-raw/P3/P3_GrantExport_with_abstracts.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, 
+    col_types = cols(`Start Date` = col_date(format = "%d.%m.%Y"), 
+        `End Date` = col_date(format = "%d.%m.%Y"), 
+        `Lay Summary Lead (English)` = col_character(), 
+        `Lay Summary  Lead (German)` = col_skip(), 
+        `Lay Summary (German)` = col_skip(), 
+        `Lay Summary Lead (French)` = col_skip(), 
+        `Lay Summary (French)` = col_skip(), 
+        `Lay Summary Lead (Italian)` = col_skip(), 
+        `Lay Summary (Italian)` = col_skip()))
+
+write_fst(P3_GrantExport_with_abstracts, "data-raw/P3/P3_GrantExport_with_abstracts.fst")
 
 file.remove("data-raw/P3/P3_GrantExport_with_abstracts.csv")
 
-
-
+# P3_PersonExport
 download.file(url = 'http://p3.snf.ch/P3Export/P3_PersonExport.csv',
               destfile = 'data-raw/P3/P3_PersonExport.csv',
               method = 'curl')
 
-zip(zipfile = "data-raw/P3/P3_PersonExport", 
-    files = "data-raw/P3/P3_PersonExport.csv")
+P3_PersonExport <- read_delim("data-raw/P3/P3_PersonExport.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, 
+    col_types = cols(`Projects as Partner` = col_character(), 
+        `Projects as Practice Partner` = col_character(), 
+        `Projects as Contact Person` = col_character()))
+
+write_fst(P3_PersonExport, "data-raw/P3/P3_PersonExport.fst")
 
 file.remove("data-raw/P3/P3_PersonExport.csv")
 
 
-
+# P3_PublicationExport
+# !!! parsing issues !!!
 download.file(url = 'http://p3.snf.ch/P3Export/P3_PublicationExport.csv',
               destfile = 'data-raw/P3/P3_PublicationExport.csv',
               method = 'curl')
 
-zip(zipfile = "data-raw/P3/P3_PublicationExport", 
-    files = "data-raw/P3/P3_PublicationExport.csv")
+P3_PublicationExport <- read_delim("data-raw/P3/P3_PublicationExport.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, 
+    col_types = cols(`Publication Year` = col_integer(), 
+        `Last Change of Outputdata` = col_character(), 
+        Volume = col_character()))
+
+write_fst(P3_PublicationExport, "data-raw/P3/P3_PublicationExport.fst")
 
 file.remove("data-raw/P3/P3_PublicationExport.csv")
 
 
-
+# P3_GrantOutputDataExport
 download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantOutputDataExport.csv',
               destfile = 'data-raw/P3/P3_GrantOutputDataExport.csv',
               method = 'curl')
 
-zip(zipfile = "data-raw/P3/P3_GrantOutputDataExport", 
-    files = "data-raw/P3/P3_GrantOutputDataExport.csv")
+P3_GrantOutputDataExport <- read_delim("data-raw/P3/P3_GrantOutputDataExport.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, col_types = cols(Year = col_integer()))
+
+write_fst(P3_GrantOutputDataExport, "data-raw/P3/P3_GrantOutputDataExport.fst")
 
 file.remove("data-raw/P3/P3_GrantOutputDataExport.csv")
 
 
-
+# P3_CollaborationExport
+# !!! parsing issues !!!
 download.file(url = 'http://p3.snf.ch/P3Export/P3_CollaborationExport.csv',
               destfile = 'data-raw/P3/P3_CollaborationExport.csv',
               method = 'curl')
 
-zip(zipfile = "data-raw/P3/P3_CollaborationExport", 
-    files = "data-raw/P3/P3_CollaborationExport.csv")
+P3_CollaborationExport <- read_delim("data-raw/P3/P3_CollaborationExport.csv", 
+                                     delim = ";", escape_double = FALSE, trim_ws = TRUE, 
+                                     col_types = cols(`Project Start Date` = col_date(format = "%d.%m.%Y"), 
+                                                      `Project End Date` = col_date(format = "%d.%m.%Y")))
+
+write_fst(P3_CollaborationExport, "data-raw/P3/P3_CollaborationExport.fst")
 
 file.remove("data-raw/P3/P3_CollaborationExport.csv")
 ```
