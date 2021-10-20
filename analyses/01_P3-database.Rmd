@@ -1,6 +1,6 @@
 ---
 title: "SNF preregistrations"
-subtitle: "EDA of P3 database"
+subtitle: "Read & save of P3 database"
 author: "Radek Panczak & Evie Vergauwe"
 date: "`r Sys.Date()`"
 output:
@@ -20,7 +20,9 @@ options(max.print = "75")
 set.seed(12345)
 
 library(pacman)
-p_load(fst, tidyverse, magrittr, kableExtra)
+p_load(tidyverse, magrittr, janitor, skimr)
+
+import::from("sjmisc", "frq")
 ```
 
 
@@ -33,7 +35,7 @@ knitr::opts_chunk$set(cache = FALSE,
                       comment = NA,
                       message = FALSE,
                       warning = FALSE,
-                      echo = FALSE)
+                      echo = TRUE)
 knitr::opts_knit$set(width = 75)
 
 mu <- Hmisc::markupSpecs$html
@@ -43,34 +45,49 @@ mu <- Hmisc::markupSpecs$html
 
 # Data
 
-Downloads of publicly available data from [SNF website](http://p3.snf.ch/Pages/DataAndDocumentation.aspx):
+Downloads of publicly available data from [SNF website](http://p3.snf.ch/Pages/DataAndDocumentation.aspx).  
 
-- `P3_GrantExport`  
-- `P3_GrantExport_with_abstracts`   
-- `P3_PersonExport`  
-- `P3_PublicationExport`   
-- `P3_GrantOutputDataExport`  
-- `P3_CollaborationExport`  
+Automated downloads with `curl` fail for some mysterious reason. Please download & save manually.  
+
+## P3_GrantExport
 
 ```{r}
 # P3_GrantExport
-download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantExport.csv',
-              destfile = 'data-raw/P3/P3_GrantExport.csv',
-              method = 'curl')
+# download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantExport.csv',
+#               destfile = 'data-raw/P3/P3_GrantExport.csv',
+#               method = 'curl')
 
 P3_GrantExport <- read_delim("data-raw/P3/P3_GrantExport.csv", 
                              delim = ";", escape_double = FALSE, trim_ws = TRUE, 
-                             col_types = cols(`Project Title English` = col_character(), `Start Date` = col_date(format = "%d.%m.%Y"), `End Date` = col_date(format = "%d.%m.%Y"), Keywords = col_character()))
+                             col_types = cols(`Project Title English` = col_character(), `Start Date` = col_date(format = "%d.%m.%Y"), `End Date` = col_date(format = "%d.%m.%Y"), Keywords = col_character())) %>% 
+  clean_names() %>% 
+  remove_empty(which = c("rows","cols")) %>% 
+  mutate(approved_amount = if_else(approved_amount == "data not included in P3",
+                                   "", approved_amount)) %>% 
+  mutate(approved_amount = as.integer(approved_amount))
+           
 
-write_fst(P3_GrantExport, "data-raw/P3/P3_GrantExport.fst")
+write_rds(P3_GrantExport, "data/P3/P3_GrantExport.Rds")
 
-file.remove("data-raw/P3/P3_GrantExport.csv")
+# file.remove("data-raw/P3/P3_GrantExport.csv")
+```
 
+```{r echo=FALSE}
+skim(P3_GrantExport)
+```
 
+```{r echo=FALSE, eval=FALSE}
+frq(P3_GrantExport, funding_instrument, sort.frq = "desc")
+frq(P3_GrantExport, funding_instrument_hierarchy, sort.frq = "desc")
+```
+
+## P3_GrantExport_with_abstracts  
+
+```{r}
 # P3_GrantExport_with_abstracts
-download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantExport_with_abstracts.csv',
-              destfile = 'data-raw/P3/P3_GrantExport_with_abstracts.csv',
-              method = 'curl')
+# download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantExport_with_abstracts.csv',
+#               destfile = 'data-raw/P3/P3_GrantExport_with_abstracts.csv',
+#               method = 'curl')
 
 P3_GrantExport_with_abstracts <- read_delim("data-raw/P3/P3_GrantExport_with_abstracts.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE, 
@@ -82,71 +99,122 @@ P3_GrantExport_with_abstracts <- read_delim("data-raw/P3/P3_GrantExport_with_abs
         `Lay Summary Lead (French)` = col_skip(), 
         `Lay Summary (French)` = col_skip(), 
         `Lay Summary Lead (Italian)` = col_skip(), 
-        `Lay Summary (Italian)` = col_skip()))
+        `Lay Summary (Italian)` = col_skip())) %>% 
+    clean_names() %>% 
+    remove_empty(which = c("rows","cols"))
 
-write_fst(P3_GrantExport_with_abstracts, "data-raw/P3/P3_GrantExport_with_abstracts.fst")
+write_rds(P3_GrantExport_with_abstracts, "data/P3/P3_GrantExport_with_abstracts.Rds")
 
-file.remove("data-raw/P3/P3_GrantExport_with_abstracts.csv")
+# file.remove("data-raw/P3/P3_GrantExport_with_abstracts.csv")
+```
 
+```{r echo=FALSE}
+skim(P3_GrantExport_with_abstracts)
+```
+
+## P3_PersonExport 
+
+```{r}
 # P3_PersonExport
-download.file(url = 'http://p3.snf.ch/P3Export/P3_PersonExport.csv',
-              destfile = 'data-raw/P3/P3_PersonExport.csv',
-              method = 'curl')
+# download.file(url = 'http://p3.snf.ch/P3Export/P3_PersonExport.csv',
+#               destfile = 'data-raw/P3/P3_PersonExport.csv',
+#               method = 'curl')
 
 P3_PersonExport <- read_delim("data-raw/P3/P3_PersonExport.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE, 
     col_types = cols(`Projects as Partner` = col_character(), 
         `Projects as Practice Partner` = col_character(), 
-        `Projects as Contact Person` = col_character()))
+        `Projects as Contact Person` = col_character())) %>% 
+    clean_names() %>% 
+    remove_empty(which = c("rows","cols"))
 
-write_fst(P3_PersonExport, "data-raw/P3/P3_PersonExport.fst")
+write_rds(P3_PersonExport, "data/P3/P3_PersonExport.Rds")
 
-file.remove("data-raw/P3/P3_PersonExport.csv")
+# file.remove("data-raw/P3/P3_PersonExport.csv")
+```
 
+```{r echo=FALSE}
+skim(P3_PersonExport)
+```
 
+## P3_PublicationExport   
+
+```{r}
 # P3_PublicationExport
-# !!! parsing issues !!!
-download.file(url = 'http://p3.snf.ch/P3Export/P3_PublicationExport.csv',
-              destfile = 'data-raw/P3/P3_PublicationExport.csv',
-              method = 'curl')
+# download.file(url = 'http://p3.snf.ch/P3Export/P3_PublicationExport.csv',
+#               destfile = 'data-raw/P3/P3_PublicationExport.csv',
+#               method = 'curl')
 
 P3_PublicationExport <- read_delim("data-raw/P3/P3_PublicationExport.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE, 
     col_types = cols(`Publication Year` = col_integer(), 
         `Last Change of Outputdata` = col_character(), 
-        Volume = col_character()))
+        Volume = col_character())) %>% 
+    clean_names() %>% 
+    remove_empty(which = c("rows","cols"))
 
-write_fst(P3_PublicationExport, "data-raw/P3/P3_PublicationExport.fst")
+# !!! parsing issues !!!
+write_rds(P3_PublicationExport, "data/P3/P3_PublicationExport.Rds")
+P3_PublicationExport_problems <- problems()
 
-file.remove("data-raw/P3/P3_PublicationExport.csv")
+# example is a field that contains a quote
+# line 8229 contains cell:
+# "Transactions of the American Crystallographic Association "The First Element: In Memory of Bob Bau";
+# once replaced to 
+# # "Transactions of the American Crystallographic Association 'The First Element: In Memory of Bob Bau";
+# it works fine
 
+# file.remove("data-raw/P3/P3_PublicationExport.csv")
+```
 
+```{r echo=FALSE}
+skim(P3_PublicationExport)
+```
+
+## P3_GrantOutputDataExport  
+
+```{r}
 # P3_GrantOutputDataExport
-download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantOutputDataExport.csv',
-              destfile = 'data-raw/P3/P3_GrantOutputDataExport.csv',
-              method = 'curl')
+# download.file(url = 'http://p3.snf.ch/P3Export/P3_GrantOutputDataExport.csv',
+#               destfile = 'data-raw/P3/P3_GrantOutputDataExport.csv',
+#               method = 'curl')
 
 P3_GrantOutputDataExport <- read_delim("data-raw/P3/P3_GrantOutputDataExport.csv", 
-    delim = ";", escape_double = FALSE, trim_ws = TRUE, col_types = cols(Year = col_integer()))
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, col_types = cols(Year = col_integer())) %>% 
+    clean_names() %>% 
+    remove_empty(which = c("rows","cols"))
 
-write_fst(P3_GrantOutputDataExport, "data-raw/P3/P3_GrantOutputDataExport.fst")
+write_rds(P3_GrantOutputDataExport, "data/P3/P3_GrantOutputDataExport.Rds")
 
-file.remove("data-raw/P3/P3_GrantOutputDataExport.csv")
+# file.remove("data-raw/P3/P3_GrantOutputDataExport.csv")
+```
 
+```{r echo=FALSE}
+skim(P3_GrantOutputDataExport)
+```
 
+## P3_CollaborationExport  
+
+```{r}
 # P3_CollaborationExport
-# !!! parsing issues !!!
-download.file(url = 'http://p3.snf.ch/P3Export/P3_CollaborationExport.csv',
-              destfile = 'data-raw/P3/P3_CollaborationExport.csv',
-              method = 'curl')
+# download.file(url = 'http://p3.snf.ch/P3Export/P3_CollaborationExport.csv',
+#               destfile = 'data-raw/P3/P3_CollaborationExport.csv',
+#               method = 'curl')
 
 P3_CollaborationExport <- read_delim("data-raw/P3/P3_CollaborationExport.csv", 
                                      delim = ";", escape_double = FALSE, trim_ws = TRUE, 
                                      col_types = cols(`Project Start Date` = col_date(format = "%d.%m.%Y"), 
-                                                      `Project End Date` = col_date(format = "%d.%m.%Y")))
+                                                      `Project End Date` = col_date(format = "%d.%m.%Y"))) %>% 
+    clean_names() %>% 
+    remove_empty(which = c("rows","cols"))
 
-write_fst(P3_CollaborationExport, "data-raw/P3/P3_CollaborationExport.fst")
+# !!! parsing issues !!!
+write_rds(P3_CollaborationExport, "data/P3/P3_CollaborationExport.Rds")
+P3_CollaborationExport_problems <- problems()
 
-file.remove("data-raw/P3/P3_CollaborationExport.csv")
+# file.remove("data-raw/P3/P3_CollaborationExport.csv")
 ```
 
+```{r echo=FALSE}
+skim(P3_CollaborationExport)
+```
