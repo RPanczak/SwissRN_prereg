@@ -1,0 +1,173 @@
+---
+title: "SNF preregistrations"
+subtitle: "Rudimentary search of P3 database"
+author: "Radek Panczak & Evie Vergauwe"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::robobook:
+    code_folding: show
+    self_contained: true
+    highlight: pygments
+editor_options: 
+  chunk_output_type: console
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../docs") })
+---
+
+```{r r-setup, include = FALSE}
+options(scipen = 999)
+options(max.print = "75")
+set.seed(12345)
+
+library(pacman)
+p_load(tidyverse, magrittr, janitor, skimr, DT)
+
+import::from("sjmisc", "frq")
+
+str_break = function(x, width = 70L) {
+  n = nchar(x)
+  if (n <= width) return(x)
+  n1 = seq(1L, n, by = width)
+  n2 = seq(width, n, by = width)
+  if (n %% width != 0) n2 = c(n2, n)
+  substring(x, n1, n2)
+}
+```
+
+
+```{r knit-setup, include = FALSE}
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+knitr::opts_chunk$set(cache = FALSE,
+                      prompt = FALSE,
+                      tidy = FALSE,
+                      comment = NA,
+                      message = FALSE,
+                      warning = FALSE,
+                      echo = TRUE)
+knitr::opts_knit$set(width = 75)
+
+mu <- Hmisc::markupSpecs$html
+```
+
+<!-- ----------------------------------------------------- -->
+
+```{r echo=FALSE}
+P3_GrantExport_with_abstracts <- read_rds("data/P3/P3_GrantExport_with_abstracts.Rds")
+
+P3_PersonExport <- read_rds("data/P3/P3_PersonExport.Rds")
+
+P3_PublicationExport <- read_rds("data/P3/P3_PublicationExport.Rds")
+
+P3_GrantOutputDataExport <- read_rds("data/P3/P3_GrantOutputDataExport.Rds")
+```
+
+# P3_GrantExport_with_abstracts  
+
+## Title search
+
+```{r}
+result_proposal_title <- P3_GrantExport_with_abstracts %>% 
+  filter(str_detect(tolower(project_title), pattern = "prereg") | 
+           str_detect(tolower(project_title), pattern = "pre-reg"))
+```
+
+Result:  
+
+```{r echo=FALSE}
+result_proposal_title %>% 
+  select(project_title, 
+         start_date, 
+         funding_instrument_hierarchy, funding_instrument,
+         discipline_name) %>% 
+  datatable()
+```
+
+Abstract of the study:  
+
+```{r echo=FALSE}
+result_proposal_title %>% 
+  pull(abstract) %>% 
+  str_break()
+```
+
+## Abstract search
+
+```{r}
+result_proposal_abstract <- P3_GrantExport_with_abstracts %>% 
+  filter(str_detect(tolower(abstract), pattern = "prereg") | 
+           str_detect(tolower(abstract), pattern = "pre-reg"))
+```
+
+```{r echo=FALSE}
+result_proposal_abstract %>% 
+  select(project_title, 
+         start_date, 
+         funding_instrument_hierarchy, funding_instrument,
+         discipline_name) %>% 
+  datatable()
+```
+
+# P3_PublicationExport
+
+## Title search
+
+```{r}
+result_pub_title <- P3_PublicationExport %>% 
+  filter(str_detect(tolower(title_of_publication), pattern = "prereg") | 
+           str_detect(tolower(title_of_publication), pattern = "pre-reg"))
+```
+
+Result:  
+
+```{r echo=FALSE}
+result_pub_title %>% 
+  select(project_number, 
+         title_of_publication, 
+         journal_title) %>% 
+  datatable()
+```
+
+Projects that produced these pubs:  
+
+```{r echo=FALSE}
+P3_GrantExport_with_abstracts %>% 
+  filter(project_number %in% result_pub_title$project_number) %>% 
+  select(project_title, 
+         start_date, 
+         funding_instrument_hierarchy, funding_instrument,
+         discipline_name) %>% 
+  datatable()
+```
+
+## Abstract search
+
+```{r}
+result_pub_abstract <- P3_PublicationExport %>% 
+  filter(str_detect(tolower(abstract), pattern = "prereg") | 
+           str_detect(tolower(abstract), pattern = "pre-reg"))
+```
+
+```{r echo=FALSE}
+result_pub_abstract %>% 
+  select(project_number, 
+         title_of_publication, 
+         journal_title) %>% 
+  datatable()
+```
+
+Projects that produced these pubs:  
+
+```{r echo=FALSE}
+P3_GrantExport_with_abstracts %>% 
+  filter(project_number %in% result_pub_abstract$project_number) %>% 
+  select(project_title, 
+         start_date, 
+         funding_instrument_hierarchy, funding_instrument,
+         discipline_name) %>% 
+  datatable()
+```
+
+## P3_GrantOutputDataExport
+
+TBD ...
