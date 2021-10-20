@@ -37,3 +37,7 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# P3 data
+/data-raw/P3/
+/data/P3/
