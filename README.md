@@ -1,1 +1,1 @@
-# SwissRN - preregistrations of SNF grants
+## SwissRN - preregistrations of SNF grants
