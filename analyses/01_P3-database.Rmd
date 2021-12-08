@@ -158,6 +158,10 @@ write_rds(P3_PublicationExport, "data/P3/P3_PublicationExport.Rds")
 P3_PublicationExport_problems <- problems()
 
 # example is a field that contains a quote
+
+# View(P3_PublicationExport %>% 
+#        filter(publication_id_snsf == "{85FB5131-4ED6-4D2A-AE78-33E386A3FF0C}"))
+
 # line 8229 contains cell:
 # "Transactions of the American Crystallographic Association "The First Element: In Memory of Bob Bau";
 # once replaced to 
