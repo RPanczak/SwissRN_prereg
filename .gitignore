@@ -40,4 +40,7 @@ vignettes/*.pdf
 
 # P3 data
 /data-raw/P3/
+/data-raw/grant_search/
+/data-raw/covid/
+/data-raw/data_portal/
 /data/P3/
